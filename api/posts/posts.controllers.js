@@ -1,4 +1,7 @@
-const Post = require('../../models/Post');
+const Author = require("../../models/Author");
+const Post = require("../../models/Post");
+const Tag = require("../../models/tag");
+const { post } = require("./posts.routes");
 
 exports.fetchPost = async (postId, next) => {
   try {
@@ -9,16 +12,7 @@ exports.fetchPost = async (postId, next) => {
   }
 };
 
-exports.postsCreate = async (req, res) => {
-  try {
-    const newPost = await Post.create(req.body);
-    res.status(201).json(newPost);
-  } catch (error) {
-    next(error);
-  }
-};
-
-exports.postsDelete = async (req, res) => {
+exports.postsDelete = async (req, res, next) => {
   try {
     await Post.findByIdAndRemove({ _id: req.post.id });
     res.status(204).end();
@@ -27,7 +21,7 @@ exports.postsDelete = async (req, res) => {
   }
 };
 
-exports.postsUpdate = async (req, res) => {
+exports.postsUpdate = async (req, res, next) => {
   try {
     await Post.findByIdAndUpdate(req.post.id, req.body);
     res.status(204).end();
@@ -36,10 +30,28 @@ exports.postsUpdate = async (req, res) => {
   }
 };
 
-exports.postsGet = async (req, res) => {
+exports.postsGet = async (req, res, next) => {
   try {
-    const posts = await Post.find();
+    const posts = await Post.find()
+      .populate("author", "name")
+      .populate("tags", "name");
     res.json(posts);
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.tagCreate = async (req, res, next) => {
+  try {
+    console.log(req.body);
+    const newTag = await Tag.create(req.body);
+    await Post.findByIdAndUpdate(req.post.id, {
+      $push: { tags: newTag },
+    });
+    await Tag.findByIdAndUpdate(newTag._id, {
+      $push: { posts: req.post.id },
+    });
+    res.status(201).json(newTag);
   } catch (error) {
     next(error);
   }
