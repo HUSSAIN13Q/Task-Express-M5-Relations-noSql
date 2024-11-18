@@ -3,7 +3,7 @@ const Post = require("../../models/Post");
 
 exports.authorGet = async (req, res, next) => {
   try {
-    const authors = await Author.find().populate("posts");
+    const authors = await Author.find().populate("posts", "-author", "-__v");
     res.json(authors);
   } catch (error) {
     next(error);

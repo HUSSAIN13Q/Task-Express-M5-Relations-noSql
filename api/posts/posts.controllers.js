@@ -33,8 +33,8 @@ exports.postsUpdate = async (req, res, next) => {
 exports.postsGet = async (req, res, next) => {
   try {
     const posts = await Post.find()
-      .populate("author", "name")
-      .populate("tags", "name");
+      .populate("author", "name", "-__v")
+      .populate("tags", "name", "-__v");
     res.json(posts);
   } catch (error) {
     next(error);
