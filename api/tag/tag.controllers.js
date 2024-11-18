@@ -1,16 +1,25 @@
-const Post = require("../../models/Post");
 const Tag = require("../../models/tag");
 
-exports.addTag = async (req, res, next) => {
+exports.tagsGet = async (req, res, next) => {
   try {
-    const { tagId } = req.params;
+    const tags = await Tag.find().populate({
+      path: "postat",
+      select: "-tamqat -__v",
+      populate: {
+        path: "alkatib",
+        select: "-postat -__v",
+      },
+    });
+    res.status(200).json(tags);
+  } catch (error) {
+    next(error);
+  }
+};
 
-    await Post.findByIdAndUpdate(req.post.id, {
-      $push: { tags: tagId },
-    });
-    await Tag.findByIdAndUpdate(tagId, {
-      $push: { posts: req.post.id },
-    });
+exports.tagsCreate = async (req, res, next) => {
+  try {
+    const newTag = await Tag.create(req.body);
+    res.status(201).json(newTag);
   } catch (error) {
     next(error);
   }
